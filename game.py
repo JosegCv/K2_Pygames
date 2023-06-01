@@ -1,4 +1,6 @@
-import pygame
+import pygame 
+import random
+import math
 
 class Bolas:
     def __init__(self):
@@ -6,14 +8,23 @@ class Bolas:
         self.screen = pygame.display.set_mode((800, 600))
         pygame.display.set_caption("Bolas")
 
-        self.player = Ball(400,300, 30)
-        self.metronomo = pygame.time.Clock()
+        self.players = []
 
+        #for i in range(random.randint(1, 11)):
+           # b =  Ball(random.randint(0, 800), random.randint(0, 600), 15, random.randint(-10, 10), random.randint(-10, 10))
+           # self.players.append(b)
+
+        self.players.append(
+            Ball(150, 150, 15, 10, 10)
+        )
+        self.players.append(
+            Ball(200,200, 20, -10, -10)
+        )
+        self.metronomo = pygame.time.Clock()
 
     def main_loop(self):
         game_over = False
-        dy = 10 
-        
+         
         while game_over == False:
             self.metronomo.tick(60)
             for evento in pygame.event.get():
@@ -23,31 +34,48 @@ class Bolas:
 
             self.screen.fill((0, 255, 0))
 
-            pygame.draw.circle(self.screen, (255,255,255), (self.player.x, self.player.y), self.player.radio)
-            self.player.draw(self.screen)
+            self.players[0].ball_collision(self.players[1])
 
-            
-            self.player.y += dy
-
-            if self.player.y == 600 - self.player.radio:
-                dy = -dy 
-
-
+            for bola in self.players:
+                bola.draw(self.screen)
+                bola.update(self.screen)
             pygame.display.flip()
 
 
 class Ball:
-    def __init__(self, x , y, radio, color =(255,255,255)):
+    def __init__(self, x , y, radio, dx = 0 , dy= 0):
         self.x = x
         self.y = y
         self.radio = radio
-        self.color = color
-    
+        self.color = (random.randint(0,255), random.randint(0, 255), random.randint(0, 255))
+        self.dx = dx
+        self.dy = dy
+
     def draw(self, surface):
         pygame.draw.circle(surface, self.color, (self.x, self.y), self.radio)
 
+    def update(self, surface):
+        self.y += self.dy
+        self.x += self.dx
 
+        if self.y >= surface.get_height() - self.radio or self.y <= self.radio:
+            self.dy = -self.dy
+        if self.x >= surface.get_width() - self.radio or self.x <= self.radio:
+            self.dx = -self.dx
+            
+        print(self.x , self.y)
+
+    def ball_collision(self, otra):
+        distancia = math.sqrt((otra.x- self.x)** 2 + (otra.y - self.y) **2 )
+        if distancia <= self.radio + otra.radio:
+            self.dx = -self.dx
+            self.dy = -self.dy
+            otra.dx = -otra.dx
+            otra.dy = -otra.dy 
+
+        
 if __name__ == "__main__":
 
     bola = Bolas()
+    ball = Ball(400, 300, 30)
     bola.main_loop()
